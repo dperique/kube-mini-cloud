@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: SOMENAME
+  namespace: kuul-test
+spec:
+  ports:
+  - name: SOMENAME-ssh
+    port: 22
+    protocol: TCP
+    targetPort: 22
+  selector:
+    app: SOMENAME-ssh
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: SOMENAME
+  namespace: kuul-test
+  labels:
+    app: SOMENAME-ssh
+spec:
+  nodeSelector:
+    kuul-type: ssh-mode
+  containers:
+  - command:
+    - /usr/sbin/sshd
+    - -D
+    image: SOMEIMAGE
+    name: kuul-ssh
+    ports:
+    - containerPort: 22
+      name: ssh-server
+      protocol: TCP
+
+    volumeMounts:
+      - mountPath: "/var/secrets"
+        name: kuul-secrets-volm
+        readOnly: true
+
+  volumes:
+    - name: kuul-secrets-volm
+      secret:
+        secretName: kuul-secrets
+
+  restartPolicy: Always
+  dnsPolicy: Default
