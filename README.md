@@ -138,8 +138,8 @@ directly via something like this (assume IP1, IP2, IP3 are IP addresses of my k8
 where I intend to run the new Pods:
 
 ```
-docker build -t kuul_ssh:v1 .
-docker save -o /tmp/o.tar kuul_ssh:v1
+docker build -t kube-mc:0.1 .
+docker save -o /tmp/o.tar kube-mc:0.1
 tar czvf ./t.tgz ./o.tar
 for i in IP1 IP2 IP3 ; do
   scp -i junk.rsa t.tgz ubuntu@$i:/tmp
@@ -148,9 +148,56 @@ for i in IP1 IP2 IP3 ; do
 done
 ```
 
-The above script loads the images directly onto the docker instance of those nodes.  This
-way, when you start up the Pod, it won't need to goto a container registry because it will
-already be present.  You will have to set the imagePullPolicy to IfNotPresent.
+The above script (see source/load_docker_images.sh) loads the images directly onto the docker
+instance of those nodes.  This way, when you start up the Pod, it won't need to goto a container
+registry because it will already be present.  You will have to set the imagePullPolicy to
+IfNotPresent.
+
+Once the image is loaded into a container registry with registry secret installed on your k8s cluster
+or you have loaded the docker image manually onto your k8s nodes, you can do this:
+
+```
+$ for i in {01..03} ; do ./makeCont.sh create dp-test$i kube-mc:0.1 ; done
+
+...
+
+service/dp-test03 created
+pod/dp-test03 created
+
+      dp-test01   10.233.55.60
+      dp-test02   10.233.46.137
+      dp-test03   10.233.6.45
+
+alias ssh="ssh -F ./ssh_config"
+
+$ alias ssh="ssh -F ./ssh_config"
+
+$ ssh dp-test01
+...
+ubuntu@dp-test01:~$ sudo su
+root@dp-test01:/home/ubuntu# exit
+exit
+ubuntu@dp-test01:~$ exit
+logout
+Connection to 10.233.55.60 closed.
+```
+
+In the kuul-test namespace, you will see dp-test01, dp-test02, dptest03 Pods.  You can
+then run the alias ssh command as printed and then login via "ssh dp-test01" for example.
+
+Here's some kubectl output:
+
+```
+$ kubectl -n kuul-stage get po -o wide | grep dp-test
+dp-test01   1/1       Running   0          3m57s     10.233.67.68    kube-test-10
+dp-test02   1/1       Running   0          3m55s     10.233.67.69    kube-test-10
+dp-test03   1/1       Running   0          3m53s     10.233.67.70    kube-test-10
+
+$ kubectl -n kuul-stage get svc  | grep dp-test
+dp-test01   ClusterIP   10.233.55.60    <none>        22/TCP    4m17s <-- this is the one as shown above
+dp-test02   ClusterIP   10.233.46.137   <none>        22/TCP    4m15s
+dp-test03   ClusterIP   10.233.6.45     <none>        22/TCP    4m13s
+```
 
 ## Creating the VMs
 
