@@ -389,3 +389,87 @@ Delete the VM like this:
 ```
 $ kubectl delete vm testvm
 ```
+
+## Some Observations With kubectl
+
+When a VM is started via `virtctl start testvm` above, a `virtlauncher` is started in
+the default namespace:
+
+```
+$ kubectl get po
+virt-launcher-testvm-9hw7n                0/2       ContainerCreating   0          5s
+
+$ kubectl get po
+NAME                                      READY     STATUS      RESTARTS   AGE
+virt-launcher-testvm-9hw7n                2/2       Running     0          117s
+
+$ kubectl describe vms testvm|grep -i runn
+...
+  Running:  true
+```
+
+The IP address of the VM is the IP address of the virt-launcher pod (note the IP address
+10.233.67.75):
+
+```
+$ kubectl get po -o wide|grep virt
+virt-launcher-testvm-9hw7n                2/2       Running     0          4m20s     10.233.67.75     kube-test-10
+
+That IP address 10.233.67.75 is reachable from the host where the Pod/VM are running:
+
+```
+$ ssh kube-test-10
+
+ubuntu@kube-test-10:~$ ping 10.233.67.75
+PING 10.233.67.75 (10.233.67.75) 56(84) bytes of data.
+64 bytes from 10.233.67.75: icmp_seq=1 ttl=64 time=0.368 ms
+^C
+--- 10.233.67.75 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.368/0.368/0.368/0.000 ms
+
+ubuntu@kube-test-10:~$ ssh cirros@10.233.67.75
+The authenticity of host '10.233.67.75 (10.233.67.75)' can't be established.
+ECDSA key fingerprint is SHA256:JJQ6r4mBkmSm/BuXbcgt+6xhVV+6WotC05brOGjEw+k.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '10.233.67.75' (ECDSA) to the list of known hosts.
+cirros@10.233.67.75's password:
+$ ip -4 addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    inet 10.233.67.75/32 brd 10.255.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+$
+```
+
+As such, we can use the same technique described above with our ssh_config file to reach
+VMs created by kubevirt in our kube-mini-cloud.
+
+Looking at the docker containers on the host to see what's going on under the hood (note I filtered
+out all the other pods and removed some unneeded text from the output for readability):
+
+```
+root@kube-test-10:/home/ubuntu# docker ps |grep -v pause|grep -v kuul-stage| grep -v hyperkube|grep -v load-image|grep -v calico| grep -v node-exporter|grep -v proxy-kube
+CONTAINER ID        IMAGE                                      COMMAND                  CREATED             NAMES
+0d8005fcc748        1dbd9c7faf63                               "/usr/bin/virt-launc…"   12 minutes ago      k8s_compute_virt-launcher-testvm-9hw7n_default_1a4ea9a4-a687-11e9-b2b8-fa163eb8592c_0
+073d789f6aba        kubevirt/cirros-registry-disk-demo         "/entry-point.sh"        12 minutes ago      k8s_volumerootfs_virt-launcher-testvm-9hw7n_default_1a4ea9a4-a687-11e9-b2b8-fa163eb8592c_0
+d30437585fc7        kubevirt/virt-handler                      "virt-handler --port…"   26 hours ago        k8s_virt-handler_virt-handler-qfrpp_kubevirt_10c195e3-a5ad-11e9-8ea2-fa163e53e0e7_0
+d706583c48a5        kubevirt/virt-operator                     "virt-operator --por…"   26 hours ago        k8s_virt-operator_virt-operator-7b5488c788-b5dlj_kubevirt_df70b49d-a5ac-11e9-8ea2-fa163e53e0e7_0
+```
+
+You can see there is a qemu process on the host:
+
+```
+root@kube-test-10:/home/ubuntu# ps aux|grep qemu
+root     138295  0.1  0.0 2687812 52364 ?       Ssl  17:48   0:00 /usr/bin/virt-launcher --qemu-timeout 5m --name testvm --uid 8efc786a-a689-11e9-b2b8-fa163eb8592c --namespace default --kubevirt-share-dir /var/run/kubevirt --ephemeral-disk-dir /var/run/kubevirt-ephemeral-disks --readiness-file /var/run/kubevirt-infra/healthy --grace-period-seconds 45 --hook-sidecars 0 --less-pvc-space-toleration 10
+root     138365  0.2  0.0 2983252 56340 ?       Sl   17:48   0:00 /usr/bin/virt-launcher --qemu-timeout 5m --name testvm --uid 8efc786a-a689-11e9-b2b8-fa163eb8592c --namespace default --kubevirt-share-dir /var/run/kubevirt --ephemeral-disk-dir /var/run/kubevirt-ephemeral-disks --readiness-file /var/run/kubevirt-infra/healthy --grace-period-seconds 45 --hook-sidecars 0 --less-pvc-space-toleration 10 --no-fork true
+uuidd    138713  6.6  0.1 5007076 101612 ?      Sl   17:49   0:21 /usr/bin/qemu-system-x86_64 -name guest=default_testvm,debug-threads=on -S -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-1-default_testvm/master-key.aes -machine pc-q35-3.1,accel=kvm,usb=off,dump-guest-core=off -cpu Skylake-Server-IBRS,ss=on,vmx=on,hypervisor=on,tsc_adjust=on,clflushopt=on,ssbd=on,avx512dq=off,avx512bw=off,avx512vl=off,pku=off -m 62 -realtime mlock=off -smp 1,sockets=1,cores=1,threads=1 -object iothread,id=iothread1 -uuid 5a9fc181-957e-5c32-9e5a-2de5e9673531 -no-user-config -nodefaults -chardev socket,id=charmonitor,fd=22,server,nowait -mon chardev=charmonitor,id=monitor,mode=control -rtc base=utc -no-shutdown -boot strict=on -device pcie-root-port,port=0x10,chassis=1,id=pci.1,bus=pcie.0,multifunction=on,addr=0x2 -device pcie-root-port,port=0x11,chassis=2,id=pci.2,bus=pcie.0,addr=0x2.0x1 -device pcie-root-port,port=0x12,chassis=3,id=pci.3,bus=pcie.0,addr=0x2.0x2 -device pcie-root-port,port=0x13,chassis=4,id=pci.4,bus=pcie.0,addr=0x2.0x3 -device pcie-root-port,port=0x14,chassis=5,id=pci.5,bus=pcie.0,addr=0x2.0x4 -device virtio-serial-pci,id=virtio-serial0,bus=pci.2,addr=0x0 -drive file=/var/run/kubevirt-ephemeral-disks/container-disk-data/default/testvm/disk_rootfs/disk-image.raw,format=raw,if=none,id=drive-ua-rootfs,cache=none -device virtio-blk-pci,scsi=off,bus=pci.3,addr=0x0,drive=drive-ua-rootfs,id=ua-rootfs,bootindex=1,write-cache=on -drive file=/var/run/kubevirt-ephemeral-disks/cloud-init-data/default/testvm/noCloud.iso,format=raw,if=none,id=drive-ua-cloudinit,cache=none -device virtio-blk-pci,scsi=off,bus=pci.4,addr=0x0,drive=drive-ua-cloudinit,id=ua-cloudinit,write-cache=on -netdev tap,fd=24,id=hostua-default,vhost=on,vhostfd=25 -device virtio-net-pci,host_mtu=1500,netdev=hostua-default,id=ua-default,mac=2a:e2:1e:c3:70:1d,bus=pci.1,addr=0x0 -chardev socket,id=charserial0,fd=26,server,nowait -device isa-serial,chardev=charserial0,id=serial0 -chardev socket,id=charchannel0,fd=27,server,nowait -device virtserialport,bus=virtio-serial0.0,nr=1,chardev=charchannel0,id=channel0,name=org.qemu.guest_agent.0 -vnc vnc=unix:/var/run/kubevirt-private/8efc786a-a689-11e9-b2b8-fa163eb8592c/virt-vnc -device VGA,id=video0,vgamem_mb=16,bus=pcie.0,addr=0x1 -sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny -msg timestamp=on
+```
+
+## Some Things to Read
+
+Still need to figure out how to create my own custom VM images.
+
+https://github.com/kubevirt/kubevirt/tree/master/docs
