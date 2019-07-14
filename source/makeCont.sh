@@ -9,7 +9,7 @@ if [[ "$3" == "" ]]; then
   echo "    delete: delete the container"
   echo ""
   echo "  Images:"
-  echo "    kuul_ssh:v1:       ubuntu image with ansible v2.4.0"
+  echo "    kube-mc:0.1:       ubuntu image with ansible v2.7.0"
   echo ""
   exit 1
 fi
