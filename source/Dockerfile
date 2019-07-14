@@ -3,6 +3,7 @@
 #
 FROM ubuntu:16.04
 
+# We need this workaround for ubunbu:16.04 but not for ubuntu:18.04
 RUN cp /etc/hosts /tmp/etc_hosts
 RUN echo "91.189.88.161 security.ubuntu.com" >> /etc/hosts
 RUN apt-get update
