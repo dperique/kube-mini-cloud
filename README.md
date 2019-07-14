@@ -469,8 +469,13 @@ root     138365  0.2  0.0 2983252 56340 ?       Sl   17:48   0:00 /usr/bin/virt-
 uuidd    138713  6.6  0.1 5007076 101612 ?      Sl   17:49   0:21 /usr/bin/qemu-system-x86_64 -name guest=default_testvm,debug-threads=on -S -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-1-default_testvm/master-key.aes -machine pc-q35-3.1,accel=kvm,usb=off,dump-guest-core=off -cpu Skylake-Server-IBRS,ss=on,vmx=on,hypervisor=on,tsc_adjust=on,clflushopt=on,ssbd=on,avx512dq=off,avx512bw=off,avx512vl=off,pku=off -m 62 -realtime mlock=off -smp 1,sockets=1,cores=1,threads=1 -object iothread,id=iothread1 -uuid 5a9fc181-957e-5c32-9e5a-2de5e9673531 -no-user-config -nodefaults -chardev socket,id=charmonitor,fd=22,server,nowait -mon chardev=charmonitor,id=monitor,mode=control -rtc base=utc -no-shutdown -boot strict=on -device pcie-root-port,port=0x10,chassis=1,id=pci.1,bus=pcie.0,multifunction=on,addr=0x2 -device pcie-root-port,port=0x11,chassis=2,id=pci.2,bus=pcie.0,addr=0x2.0x1 -device pcie-root-port,port=0x12,chassis=3,id=pci.3,bus=pcie.0,addr=0x2.0x2 -device pcie-root-port,port=0x13,chassis=4,id=pci.4,bus=pcie.0,addr=0x2.0x3 -device pcie-root-port,port=0x14,chassis=5,id=pci.5,bus=pcie.0,addr=0x2.0x4 -device virtio-serial-pci,id=virtio-serial0,bus=pci.2,addr=0x0 -drive file=/var/run/kubevirt-ephemeral-disks/container-disk-data/default/testvm/disk_rootfs/disk-image.raw,format=raw,if=none,id=drive-ua-rootfs,cache=none -device virtio-blk-pci,scsi=off,bus=pci.3,addr=0x0,drive=drive-ua-rootfs,id=ua-rootfs,bootindex=1,write-cache=on -drive file=/var/run/kubevirt-ephemeral-disks/cloud-init-data/default/testvm/noCloud.iso,format=raw,if=none,id=drive-ua-cloudinit,cache=none -device virtio-blk-pci,scsi=off,bus=pci.4,addr=0x0,drive=drive-ua-cloudinit,id=ua-cloudinit,write-cache=on -netdev tap,fd=24,id=hostua-default,vhost=on,vhostfd=25 -device virtio-net-pci,host_mtu=1500,netdev=hostua-default,id=ua-default,mac=2a:e2:1e:c3:70:1d,bus=pci.1,addr=0x0 -chardev socket,id=charserial0,fd=26,server,nowait -device isa-serial,chardev=charserial0,id=serial0 -chardev socket,id=charchannel0,fd=27,server,nowait -device virtserialport,bus=virtio-serial0.0,nr=1,chardev=charchannel0,id=channel0,name=org.qemu.guest_agent.0 -vnc vnc=unix:/var/run/kubevirt-private/8efc786a-a689-11e9-b2b8-fa163eb8592c/virt-vnc -device VGA,id=video0,vgamem_mb=16,bus=pcie.0,addr=0x1 -sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny -msg timestamp=on
 ```
 
+## Try the fedora image
+
+User=fedora, password=fedora
+
 ## Some Things to Read
 
 Still need to figure out how to create my own custom VM images.
 
 https://github.com/kubevirt/kubevirt/tree/master/docs
+https://kubevirt.io/api-reference/
