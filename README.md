@@ -414,6 +414,7 @@ The IP address of the VM is the IP address of the virt-launcher pod (note the IP
 ```
 $ kubectl get po -o wide|grep virt
 virt-launcher-testvm-9hw7n                2/2       Running     0          4m20s     10.233.67.75     kube-test-10
+```
 
 That IP address 10.233.67.75 is reachable from the host where the Pod/VM are running:
 
