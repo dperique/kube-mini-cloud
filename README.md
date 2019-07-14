@@ -204,4 +204,188 @@ dp-test03   ClusterIP   10.233.6.45     <none>        22/TCP    4m13s
 
 ## Creating the VMs
 
-We will use kubevirt which requires some setup -- more on that later.
+We will use [kubevirt](https://kubevirt.io/user-guide/docs/latest/welcome/index.html) which requires
+some setup.  See the [kubevirt github repo](https://github.com/kubevirt/kubevirt) for more information.
+I will copy and annotate the demo you will find elsewhere on the web (credit goes there).
+
+This [kubevirt architecture](https://github.com/kubevirt/kubevirt/blob/master/docs/architecture.md)
+document helps to understand what kubevirt is.
+
+## Some setup for kubevirt
+
+On the hosts that will be running VMs using kubevirt
+[Enable nested virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/index.html)
+like this:
+
+```
+  sudo su
+  modprobe -r kvm_intel
+  modprobe kvm_intel nested=1
+```
+
+Apply the demo like this:
+
+```
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/v0.19.0/kubevirt-operator.yaml
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/v0.19.0/kubevirt-cr.yaml
+```
+
+You will see something like this:
+
+```
+kubevirt-operator.yaml
+namespace/kubevirt created
+customresourcedefinition.apiextensions.k8s.io/kubevirts.kubevirt.io created
+clusterrole.rbac.authorization.k8s.io/kubevirt.io:operator created
+serviceaccount/kubevirt-operator created
+clusterrole.rbac.authorization.k8s.io/kubevirt-operator created
+clusterrolebinding.rbac.authorization.k8s.io/kubevirt-operator created
+deployment.apps/virt-operator created
+
+$ kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/v0.19.0/kubevirt-cr.yaml
+kubevirt.kubevirt.io/kubevirt created
+```
+
+In my caes, I have several nodes; the `virt-handler` daemonset will create a virt-hanlder
+pod on every k8s node.  Later, I'll make it so that only my kube-test-10 k8s gets it but
+this is what you'll see:
+
+```
+$ kubectl get po -n kubevirt
+NAME                               READY     STATUS    RESTARTS   AGE
+virt-api-cd767567-hqf25            1/1       Running   0          91s
+virt-api-cd767567-rtvft            1/1       Running   0          91s
+virt-controller-7d6fb4d9c5-2sxz9   1/1       Running   0          68s
+virt-controller-7d6fb4d9c5-9kjqt   1/1       Running   0          67s
+virt-handler-2p2w9                 1/1       Running   0          67s
+virt-handler-fdvm2                 1/1       Running   0          67s
+virt-handler-jrpcw                 1/1       Running   0          67s
+virt-handler-qfrpp                 1/1       Running   0          67s
+virt-handler-wvz96                 1/1       Running   0          67s
+virt-handler-z4jdl                 1/1       Running   0          67s
+virt-operator-7b5488c788-b5dlj     1/1       Running   0          2m30s
+virt-operator-7b5488c788-w78wx     1/1       Running   0          2m30s
+```
+
+Get virtctl and move it to a place where you can run it:
+
+```
+$ curl -L -o virtctl https://github.com/kubevirt/kubevirt/releases/download/v0.19.0/virtctl-v0.19.0-linux-amd64
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   617    0   617    0     0    650      0 --:--:-- --:--:-- --:--:--   650
+100 36.5M  100 36.5M    0     0  18.3M      0  0:00:01  0:00:01 --:--:-- 65.1M
+$ chmod +x virtctl
+$ sudo mv virtctl /usr/local/bin
+```
+
+## Run the basic kubevirt demo for CirrOS
+
+This [demo](https://kubevirt.io//quickstart_minikube/) gives an idea of what to do but stops short of
+creating a VM.
+
+This [kubevirt lab1](https://kubevirt.io//labs/kubernetes/lab1) exercise creates a VM.
+
+I put the commands here for easy access and downloaded the
+[vm.yaml](`https://raw.githubusercontent.com/kubevirt/kubevirt.github.io/master/labs/manifests/vm.yaml`) file
+and placed it in the `files` subdir so you can view it without downloading it.
+
+```
+$ wget https://raw.githubusercontent.com/kubevirt/kubevirt.github.io/master/labs/manifests/vm.yaml
+$ kubectl apply -f vm.yaml
+virtualmachine.kubevirt.io "testvm" created
+  virtualmachineinstancepreset.kubevirt.io "small" created
+$ kubectl get vms
+$ kubectl get vms -o yaml testvm
+$ virtctl start testvm
+$ kubectl get vmis
+$ kubectl get vmis -o yaml testvm
+```
+
+See that the VM is present but not running and then start the VM:
+
+```
+$ kubectl get vms
+NAME      AGE       RUNNING   VOLUME
+testvm    1d        false
+
+$ kubectl describe vms testvm|grep -i running
+...
+  Running:  false
+
+$ virtctl start testvm
+VM testvm was scheduled to start
+```
+
+Give it a few minutes and the console will spew logs as the VM starts up.
+Login and see what interfaces are present and the IP address:
+
+```
+$ virtctl console testvm
+...
+############ debug end   ##############
+  ____               ____  ____
+ / __/ __ ____ ____ / __ \/ __/
+/ /__ / // __// __// /_/ /\ \
+\___//_//_/  /_/   \____/___/
+   http://cirros-cloud.net
+
+
+login as 'cirros' user. default password: 'gocubsgo'. use 'sudo' for root.
+testvm login: cirros
+Password: gocubsgo
+
+$ ip -4 addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    inet 10.233.67.73/32 brd 10.255.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+$
+```
+
+In my case, I want to force it to use a public DNS server and ping some random
+website; I do this inside the VM:
+
+```
+$ sudo su
+$ echo "nameserver 8.8.8.8" > /etc/resolv.conf
+$ cat /etc/resolv.conf
+nameserver 8.8.8.8
+$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8): 56 data bytes
+64 bytes from 8.8.8.8: seq=0 ttl=53 time=2.699 ms
+^C
+--- 8.8.8.8 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 2.699/2.699/2.699 ms
+$ ping www.intel.com
+PING www.intel.com (184.24.100.5): 56 data bytes
+64 bytes from 184.24.100.5: seq=0 ttl=53 time=1.669 ms
+^C
+--- www.intel.com ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 1.669/1.669/1.669 ms
+```
+
+You can see above that the VM has Internet access.
+
+Exit out of the virtctl console by typing "control-]".
+
+Stop the VM and confirm it is no longer running.
+
+```
+$ virtctl stop testvm
+VM testvm was scheduled to stop
+
+$ kubectl describe vms testvm|grep -i runn
+...
+  Running:  false
+```
+
+Delete the VM like this:
+
+```
+$ kubectl delete vm testvm
+```
