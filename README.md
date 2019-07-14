@@ -120,8 +120,11 @@ to generate unique Pods.  The Pods have these characteristics:
 
 * The template mounts a secrets volume so that you can keep your Docker images free of
   secrets.  In the Pod, you can acces the secrets in `/var/secrets`.
+  * Create the kuul-secret by modifying the source/kuul-secrets.yaml file and then doing
+    `kubectl apply -f kuul-secrets.yaml --namespace kuul-test`
 * We run the testing Pods in a namespace called `kuul-test` to keep them separate
 * We use a nodeSelector so that we can steer the test Pods to particular k8s nodes
+  * Label your node using `kubectl label node --overwrite kube-test-10 kuul-type=ssh`
 * We use DNS from the host via `dnsPolicy: Default`.  You can change this if you want
   depending on what you're doing.
 
