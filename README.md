@@ -85,9 +85,11 @@ Host dp-test2
   IdentityFile ~/.ssh/junk.id_rsa
 ```
 
-With that file in `~/.ssh/config`, I can do this:
+With that file in `~/.ssh/config` or if you alias "ssh" to use that config,
+we can do this:
 
 ```
+$ alias ssh="ssh -F ~/ssh_config"
 $ ssh dp-test1
 ```
 
