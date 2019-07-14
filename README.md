@@ -153,8 +153,11 @@ instance of those nodes.  This way, when you start up the Pod, it won't need to 
 registry because it will already be present.  You will have to set the imagePullPolicy to
 IfNotPresent.
 
-Once the image is loaded into a container registry with registry secret installed on your k8s cluster
-or you have loaded the docker image manually onto your k8s nodes, you can do this:
+## Creating the Pods
+
+Once the image is loaded into a container registry with registry secret installed on your
+k8s cluster or you have loaded the docker image manually onto your k8s nodes, and you set
+your kubectl context to your k8s clsuter, you can do this
 
 ```
 $ for i in {01..03} ; do ./makeCont.sh create dp-test$i kube-mc:0.1 ; done
@@ -168,13 +171,13 @@ pod/dp-test03 created
       dp-test02   10.233.46.137
       dp-test03   10.233.6.45
 
-alias ssh="ssh -F ./ssh_config"
+alias ssh="ssh -F ./ssh_config"  <-- Do this so you can use the ssh_config file
 
 $ alias ssh="ssh -F ./ssh_config"
 
 $ ssh dp-test01
 ...
-ubuntu@dp-test01:~$ sudo su
+ubuntu@dp-test01:~$ sudo su   <-- see that we have sudo privilege
 root@dp-test01:/home/ubuntu# exit
 exit
 ubuntu@dp-test01:~$ exit
@@ -188,13 +191,13 @@ then run the alias ssh command as printed and then login via "ssh dp-test01" for
 Here's some kubectl output:
 
 ```
-$ kubectl -n kuul-stage get po -o wide | grep dp-test
+$ kubectl -n kuul-test get po -o wide | grep dp-test
 dp-test01   1/1       Running   0          3m57s     10.233.67.68    kube-test-10
 dp-test02   1/1       Running   0          3m55s     10.233.67.69    kube-test-10
 dp-test03   1/1       Running   0          3m53s     10.233.67.70    kube-test-10
 
-$ kubectl -n kuul-stage get svc  | grep dp-test
-dp-test01   ClusterIP   10.233.55.60    <none>        22/TCP    4m17s <-- this is the one as shown above
+$ kubectl -n kuul-test get svc  | grep dp-test
+dp-test01   ClusterIP   10.233.55.60    <none>        22/TCP    4m17s <-- the one shown above
 dp-test02   ClusterIP   10.233.46.137   <none>        22/TCP    4m15s
 dp-test03   ClusterIP   10.233.6.45     <none>        22/TCP    4m13s
 ```
