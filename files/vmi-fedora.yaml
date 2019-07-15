@@ -1,3 +1,10 @@
+# Taken from https://github.com/kubevirt/kubevirt/blob/master/examples/vmi-fedora.yaml
+# on July 14, 2019 8pm (or so) so it may change since it's from master branch.
+# Made these modifications:
+# * use the image not in the private registry
+# * set "dnsPolicy: default" so it will use my host DNS servers
+#   and not my k8s cluster DNS server.
+#
 ---
 apiVersion: kubevirt.io/v1alpha3
 kind: VirtualMachineInstance
@@ -21,9 +28,12 @@ spec:
       requests:
         memory: 1024M
   terminationGracePeriodSeconds: 0
+  # Added by dperique
   dnsPolicy: Default
   volumes:
   - containerDisk:
+      #image: registry:5000/kubevirt/fedora-cloud-container-disk-demo:devel
+      # Added by dperique
       image: kubevirt/fedora-cloud-container-disk-demo:latest
     name: containerdisk
   - cloudInitNoCloud:
