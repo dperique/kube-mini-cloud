@@ -10,9 +10,9 @@ apiVersion: kubevirt.io/v1alpha3
 kind: VirtualMachineInstance
 metadata:
   labels:
-    special: vmi-minikube
-    kubevirt.io/domain: minikube
-  name: vmi-minikube
+    special: vmi-minikube1
+    kubevirt.io/domain: minikube1
+  name: vmi-minikube1
 
 spec:
   domain:
@@ -29,6 +29,7 @@ spec:
     resources:
       requests:
         memory: 8192M
+        cpu: "4"
   terminationGracePeriodSeconds: 0
   # Added by dperique
   dnsPolicy: Default
@@ -36,7 +37,7 @@ spec:
   - containerDisk:
       # Added by dperique
       #image: kubevirt/fedora-cloud-container-disk-demo:latest
-      image: kube-cm/ubuntu-xenial-minikube:0.45
+      image: kube-cm/ubuntu-xenial-minikube:0.46
     name: containerdisk
   #- cloudInitNoCloud:
   #    userData: |-
