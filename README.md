@@ -661,3 +661,22 @@ Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes
 root@ubuntu:/home/ubuntu#
 ```
+
+## Some Disk Images
+
+The [Ubuntu 16.04 minimal](https://cloud-images.ubuntu.com/minimal/releases/xenial/release-20190628/ubuntu-16.04-minimal-cloudimg-amd64-disk1.img)
+image seems to work.  I get it via:
+
+```
+$ wget https://cloud-images.ubuntu.com/minimal/releases/xenial/release-20190628/ubuntu-16.04-minimal-cloudimg-amd64-disk1.img
+$ qemu-img resize ubuntu-16.04-minimal-cloudimg-amd64-disk1.img +20G
+
+$ cat Dockerfile
+FROM kubevirt/container-disk-v1alpha
+ADD ubuntu-16.04-minimal-cloudimg-amd64-disk1.img /disk
+
+$ sudo docker build -t kube-cm/ubuntu-16.04-minimal:0.20 .
+$ sudo docker push -t kube-cm/ubuntu-16.04-minimal:0.20 .
+
+$ kubectl apply -f ubuntu-16.04-minimal.yaml
+```
