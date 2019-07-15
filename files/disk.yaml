@@ -1,0 +1,36 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    special: vmi-minikube1
+    kubevirt.io/domain: minikube1
+  name: vmi-minikube1
+
+spec:
+  domain:
+    devices:
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+      - disk:
+          bus: virtio
+        name: host-disk
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 8192M
+        cpu: "4"
+  terminationGracePeriodSeconds: 0
+  dnsPolicy: Default
+  volumes:
+  - containerDisk:
+      image: kube-cm/ubuntu-xenial-minikube:0.45
+    name: containerdisk
+  - hostDisk:
+      # Creates a 20G disk in /tmp/disk.img on the k8s host
+      capacity: 20Gi
+      path: /tmp/disk.img
+      type: DiskOrCreate
+    name: host-disk
