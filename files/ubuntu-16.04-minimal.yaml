@@ -1,0 +1,41 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    special: vmi-ubuntu
+    kubevirt.io/domain: ubuntu
+  name: vmi-ubuntu
+
+spec:
+  domain:
+    devices:
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+      - disk:
+          bus: virtio
+        name: cloudinitdisk
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 8192M
+        cpu: "4"
+  terminationGracePeriodSeconds: 0
+  dnsPolicy: Default
+  volumes:
+  - containerDisk:
+      image: kube-cm/ubuntu-16.04-minimal:0.20
+    name: containerdisk
+  - cloudInitNoCloud:
+      userData: |-
+        #cloud-config
+        users:
+          - name: root
+            ssh-authorized-keys:
+              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABA... lulu@kuul.com
+          - name: ubuntu
+            ssh-authorized-keys:
+              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABA... lulu@kuul.com
+    name: cloudinitdisk
