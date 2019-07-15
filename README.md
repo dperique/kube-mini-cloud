@@ -213,6 +213,12 @@ document helps to understand what kubevirt is.
 
 ## Some setup for kubevirt
 
+NOTES:
+  * this [doc](https://github.com/kubevirt/user-guide/blob/master/administration/intro.adoc) has
+    just about everything you need to get started.
+  * install using [ansible playbooks](https://github.com/kubevirt/kubevirt-ansible)
+    * including a [role that installs go](https://github.com/jlund/ansible-go)
+
 On the hosts that will be running VMs using kubevirt
 [Enable nested virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/index.html)
 like this:
@@ -473,9 +479,53 @@ uuidd    138713  6.6  0.1 5007076 101612 ?      Sl   17:49   0:21 /usr/bin/qemu-
 
 User=fedora, password=fedora
 
+```
+$ kubectl get virtualmachineinstance
+NAME          AGE       PHASE     IP             NODENAME
+vmi-fedora    1h        Running   10.233.67.95   kube-test-10
+vmi-fedora2   1h        Running   10.233.67.96   kube-test-10
+
+$  kubectl get vmis
+NAME          AGE       PHASE     IP             NODENAME
+vmi-fedora    1h        Running   10.233.67.95   kube-test-10
+vmi-fedora2   1h        Running   10.233.67.96   kube-test-10
+```
 ## Some Things to Read
 
 Still need to figure out how to create my own custom VM images.
 
 https://github.com/kubevirt/kubevirt/tree/master/docs
 https://kubevirt.io/api-reference/
+
+How to use PV/PVCs as the VM's disk:
+  https://github.com/kubevirt/kubevirt/blob/master/docs/direct-pv-disks.md
+
+Use filesystem as backing store:
+  https://github.com/kubevirt/kubevirt/blob/master/docs/filesystem-pv-disks.md
+
+Read about debugging for kubevirt:
+  https://github.com/kubevirt/kubevirt/blob/master/docs/debugging.md
+
+Read this on how to interact with the VMs:
+  https://github.com/kubevirt/user-guide/blob/master/architecture/virtual-machine.adoc#kubectl-commandline-interactions
+
+Use multus to connect my VMs to multiple networks:
+  https://github.com/intel/multus-cni
+  https://github.com/kubevirt/user-guide/blob/master/creating-virtual-machines/interfaces-and-networks.adoc
+
+
+## Things I still need to get working
+
+* Ability to put an arbitrary public key in the VM's .ssh/authorized_keys
+  * See https://github.com/kubevirt/user-guide/blob/master/creating-virtual-machines/startup-scripts.adoc
+    * Look for ssh-authorized-keys example
+* Use PVs as the VM's backing disk
+  * Maybe this is related: https://github.com/kubevirt/user-guide/blob/master/administration/image-upload.adoc
+* VMs need 20G disk:
+  * maybe this: https://github.com/kubevirt/user-guide/blob/master/creating-virtual-machines/disks-and-volumes.adoc#hostdisk
+* Create a Kubernetes cluster using VMs created by kubevirt
+  * Create a Pod that runs kubespray that contains the inventory of VMs created by kubevirt
+* Restrict to only kube-test-10 (which is a big BM that can run lots of VMs)
+  * See https://github.com/kubevirt/user-guide/pull/261
+* Startup VMs using my custom images:
+  * https://github.com/kubevirt/kubevirt/blob/master/docs/container-register-disks.md
