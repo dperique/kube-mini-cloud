@@ -1,0 +1,47 @@
+# Taken from https://github.com/kubevirt/kubevirt/blob/master/examples/vmi-fedora.yaml
+# on July 14, 2019 8pm (or so) so it may change since it's from master branch.
+# Made these modifications:
+# * use the my custom image
+# * set "dnsPolicy: default" so it will use my host DNS servers
+#   and not my k8s cluster DNS server.
+#
+---
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    special: vmi-minikube
+    kubevirt.io/domain: minikube
+  name: vmi-minikube
+
+spec:
+  domain:
+    devices:
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+      #- disk:
+      #    bus: virtio
+      #  name: cloudinitdisk
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 8192M
+  terminationGracePeriodSeconds: 0
+  # Added by dperique
+  dnsPolicy: Default
+  volumes:
+  - containerDisk:
+      # Added by dperique
+      #image: kubevirt/fedora-cloud-container-disk-demo:latest
+      image: kube-cm/ubuntu-xenial-minikube:0.45
+    name: containerdisk
+  #- cloudInitNoCloud:
+  #    userData: |-
+  #      #cloud-config
+  #      # user=fedora (added by dperique)
+  #      password: fedora
+  #      chpasswd: { expire: False }
+  #  name: cloudinitdisk
