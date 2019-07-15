@@ -680,3 +680,6 @@ $ sudo docker push -t kube-cm/ubuntu-16.04-minimal:0.20 .
 
 $ kubectl apply -f ubuntu-16.04-minimal.yaml
 ```
+
+NOTE: This [cloud config tutorial](https://www.digitalocean.com/community/tutorials/how-to-use-cloud-config-for-your-initial-server-setup)
+was useful to help me get the cloudinit setup.
