@@ -472,7 +472,7 @@ You can see there is a qemu process on the host:
 root@kube-test-10:/home/ubuntu# ps aux|grep qemu
 root     138295  0.1  0.0 2687812 52364 ?       Ssl  17:48   0:00 /usr/bin/virt-launcher --qemu-timeout 5m --name testvm --uid 8efc786a-a689-11e9-b2b8-fa163eb8592c --namespace default --kubevirt-share-dir /var/run/kubevirt --ephemeral-disk-dir /var/run/kubevirt-ephemeral-disks --readiness-file /var/run/kubevirt-infra/healthy --grace-period-seconds 45 --hook-sidecars 0 --less-pvc-space-toleration 10
 root     138365  0.2  0.0 2983252 56340 ?       Sl   17:48   0:00 /usr/bin/virt-launcher --qemu-timeout 5m --name testvm --uid 8efc786a-a689-11e9-b2b8-fa163eb8592c --namespace default --kubevirt-share-dir /var/run/kubevirt --ephemeral-disk-dir /var/run/kubevirt-ephemeral-disks --readiness-file /var/run/kubevirt-infra/healthy --grace-period-seconds 45 --hook-sidecars 0 --less-pvc-space-toleration 10 --no-fork true
-uuidd    138713  6.6  0.1 5007076 101612 ?      Sl   17:49   0:21 /usr/bin/qemu-system-x86_64 -name guest=default_testvm,debug-threads=on -S -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-1-default_testvm/master-key.aes -machine pc-q35-3.1,accel=kvm,usb=off,dump-guest-core=off -cpu Skylake-Server-IBRS,ss=on,vmx=on,hypervisor=on,tsc_adjust=on,clflushopt=on,ssbd=on,avx512dq=off,avx512bw=off,avx512vl=off,pku=off -m 62 -realtime mlock=off -smp 1,sockets=1,cores=1,threads=1 -object iothread,id=iothread1 -uuid 5a9fc181-957e-5c32-9e5a-2de5e9673531 -no-user-config -nodefaults -chardev socket,id=charmonitor,fd=22,server,nowait -mon chardev=charmonitor,id=monitor,mode=control -rtc base=utc -no-shutdown -boot strict=on -device pcie-root-port,port=0x10,chassis=1,id=pci.1,bus=pcie.0,multifunction=on,addr=0x2 -device pcie-root-port,port=0x11,chassis=2,id=pci.2,bus=pcie.0,addr=0x2.0x1 -device pcie-root-port,port=0x12,chassis=3,id=pci.3,bus=pcie.0,addr=0x2.0x2 -device pcie-root-port,port=0x13,chassis=4,id=pci.4,bus=pcie.0,addr=0x2.0x3 -device pcie-root-port,port=0x14,chassis=5,id=pci.5,bus=pcie.0,addr=0x2.0x4 -device virtio-serial-pci,id=virtio-serial0,bus=pci.2,addr=0x0 -drive file=/var/run/kubevirt-ephemeral-disks/container-disk-data/default/testvm/disk_rootfs/disk-image.raw,format=raw,if=none,id=drive-ua-rootfs,cache=none -device virtio-blk-pci,scsi=off,bus=pci.3,addr=0x0,drive=drive-ua-rootfs,id=ua-rootfs,bootindex=1,write-cache=on -drive file=/var/run/kubevirt-ephemeral-disks/cloud-init-data/default/testvm/noCloud.iso,format=raw,if=none,id=drive-ua-cloudinit,cache=none -device virtio-blk-pci,scsi=off,bus=pci.4,addr=0x0,drive=drive-ua-cloudinit,id=ua-cloudinit,write-cache=on -netdev tap,fd=24,id=hostua-default,vhost=on,vhostfd=25 -device virtio-net-pci,host_mtu=1500,netdev=hostua-default,id=ua-default,mac=2a:e2:1e:c3:70:1d,bus=pci.1,addr=0x0 -chardev socket,id=charserial0,fd=26,server,nowait -device isa-serial,chardev=charserial0,id=serial0 -chardev socket,id=charchannel0,fd=27,server,nowait -device virtserialport,bus=virtio-serial0.0,nr=1,chardev=charchannel0,id=channel0,name=org.qemu.guest_agent.0 -vnc vnc=unix:/var/run/kubevirt-private/8efc786a-a689-11e9-b2b8-fa163eb8592c/virt-vnc -device VGA,id=video0,vgamem_mb=16,bus=pcie.0,addr=0x1 -sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny -msg timestamp=on
+uuidd    138713  6.6  0.1 5007076 101612 ?      Sl   17:49   0:21 /usr/bin/qemu-system-x86_64 -name guest=default_testvm,debug-threads=on -S -object ...
 ```
 
 ## Try the fedora image
@@ -490,6 +490,36 @@ NAME          AGE       PHASE     IP             NODENAME
 vmi-fedora    1h        Running   10.233.67.95   kube-test-10
 vmi-fedora2   1h        Running   10.233.67.96   kube-test-10
 ```
+
+## Create an Custom Image from My Image
+
+We have a custom ubuntu image that was custom built using Disk Image Builder (DIB) and
+it contains various tools including minikube.  We use this image on Openstack to build
+instances (VMs) via Nodepool; Zuul consumes these VMs to run CI jobs.
+I would like to take this image and run it under kubevirt.
+
+Using the [container-register-disks](https://github.com/kubevirt/kubevirt/blob/master/docs/container-register-disks.md)
+doc, I did this on my kube-test-10 k8s host.
+
+```
+cat << END > Dockerfile
+FROM kubevirt/container-disk-v1alpha
+ADD ubuntu-xenial-minikube-0000000045.qcow2 /disk <-- this is the DIB image
+END
+
+sudo docker build -t kube-cm/ubuntu-xenial-minikube:0.45 .
+```
+
+This build the docker image; the image resides locally on kube-test-10 so it's ready to be pulled.
+I then created files/custom-mini.yaml which is just like the fedora yaml except it uses my
+custom imge.  I then did:
+
+```
+kubectl apply -f files/custom-mini.yaml
+```
+
+I then got a VM using my image.
+
 ## Some Things to Read
 
 Still need to figure out how to create my own custom VM images.
@@ -513,6 +543,8 @@ Use multus to connect my VMs to multiple networks:
   https://github.com/intel/multus-cni
   https://github.com/kubevirt/user-guide/blob/master/creating-virtual-machines/interfaces-and-networks.adoc
 
+List of VMs in the repo:
+  https://github.com/kubevirt/kubevirt/blob/master/docs/devel/guest-os-info.md
 
 ## Things I still need to get working
 
@@ -523,9 +555,109 @@ Use multus to connect my VMs to multiple networks:
   * Maybe this is related: https://github.com/kubevirt/user-guide/blob/master/administration/image-upload.adoc
 * VMs need 20G disk:
   * maybe this: https://github.com/kubevirt/user-guide/blob/master/creating-virtual-machines/disks-and-volumes.adoc#hostdisk
+  * from: https://github.com/kubevirt/kubevirt/blob/master/docs/devel/virtual-machine.md
+
+```
+apiVersion: kubevirt.io/v1alpha2
+kind: VirtualMachine
+metadata:
+  name: myvm
+spec:
+  running: false
+  template:
+    metadata:
+      labels:
+        my: label
+    spec:
+      domain:
+        resources:
+          requests:
+            memory: 8Mi
+        devices:
+          disks:
+          - name: disk0
+            volumeName: mypcv  <-- the disk will be a PVC
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: myclaim
+```
 * Create a Kubernetes cluster using VMs created by kubevirt
   * Create a Pod that runs kubespray that contains the inventory of VMs created by kubevirt
 * Restrict to only kube-test-10 (which is a big BM that can run lots of VMs)
   * See https://github.com/kubevirt/user-guide/pull/261
 * Startup VMs using my custom images:
   * https://github.com/kubevirt/kubevirt/blob/master/docs/container-register-disks.md
+
+
+## Troubleshooting
+
+I saw this after I had done a `kubectl delete -f custom-minikube.yaml`; I expected to delete the VM.
+I was then unable to apply custom-minikube.yaml because of it.
+
+```
+$ kubectl get vmis
+NAME            AGE       PHASE     IP              NODENAME
+vmi-fedora      10h       Running   10.233.67.95    kube-test-k8s-node-10
+vmi-fedora2     10h       Running   10.233.67.96    kube-test-k8s-node-10
+vmi-minikube    7m        Failed    10.233.67.111   kube-test-k8s-node-10
+vmi-minikube1   27s       Running   10.233.67.112   kube-test-k8s-node-10
+```
+
+I was able to mitigate this by deleting the vmi:
+
+```
+$ kubectl delete vmi vmi-minikube
+virtualmachineinstance.kubevirt.io "vmi-minikube" deleted
+
+$ kubectl get vmis
+NAME            AGE       PHASE     IP              NODENAME
+vmi-fedora      10h       Running   10.233.67.95    kube-test-k8s-node-10
+vmi-fedora2     10h       Running   10.233.67.96    kube-test-k8s-node-10
+vmi-minikube1   44s       Running   10.233.67.112   kube-test-k8s-node-10
+```
+
+## Trying to make a bigger disk
+
+Resize the image using qemu:
+
+```
+$ qemu-img resize ubuntu-xenial-minikube-0000000045-20G.qcow2 +15G
+```
+
+Then rebuild your image container using this new disk.
+
+Then when you go into the VM, you will see the disk is bigg:
+
+```
+ubuntu@ubuntu:~$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev            3.7G     0  3.7G   0% /dev
+tmpfs           761M  8.7M  753M   2% /run
+/dev/vda1        17G  2.6G   14G  16% /        <-- this used to be 4G in size
+tmpfs           3.8G     0  3.8G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+tmpfs           3.8G     0  3.8G   0% /sys/fs/cgroup
+```
+
+See files/disk.yaml using host disk.  The disk is there but you have to mount it.
+
+```
+root@ubuntu:/home/ubuntu# fdisk -l
+Disk /dev/vda: 3 GiB, 3225681920 bytes, 6300160 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xbcef8221
+
+Device     Boot Start     End Sectors Size Id Type
+/dev/vda1  *     2048 6298111 6296064   3G 83 Linux
+
+
+Disk /dev/vdb: 20 GiB, 21474836480 bytes, 41943040 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+root@ubuntu:/home/ubuntu#
+```
