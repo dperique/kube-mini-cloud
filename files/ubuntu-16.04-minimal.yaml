@@ -5,6 +5,7 @@ metadata:
     special: vmi-ubuntu
     kubevirt.io/domain: ubuntu
   name: vmi-ubuntu
+  namespace: kubevirt
 
 spec:
   domain:
