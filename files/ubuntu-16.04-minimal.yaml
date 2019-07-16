@@ -5,7 +5,6 @@ metadata:
     special: vmi-ubuntu
     kubevirt.io/domain: ubuntu
   name: vmi-ubuntu
-  namespace: kubevirt
 
 spec:
   domain:
@@ -39,4 +38,23 @@ spec:
           - name: ubuntu
             ssh-authorized-keys:
               - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABA... lulu@kuul.com
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+        write_files:
+          - path: /etc/docker/daemon.json
+            content: |
+              {
+                "bip": "192.168.0.1/16"
+              }
+              END
+        runcmd:
+          - apt-add-repository ppa:ansible/ansible
+          - apt-get update
+          - apt-get install -y ansible
+          - apt-get install -y python
+        # If you ever want a root password (for debugging)
+        #chpasswd:
+        #  list: |
+        #    ubuntu:password
+        #  expire: False
     name: cloudinitdisk
