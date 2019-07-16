@@ -94,8 +94,9 @@ kube-master
 ## Prepare the VMs for kubespray installation
 
 For each VM, I allowed ssh access via root so I can make any modifications necessary to
-run kubespray.  For each VM, do this (TODO: get this in the cloudinit section so it is
-done automatically at VM create):
+run kubespray.  For each VM, do this (in the ubuntu_16.04-minimal.yaml I added this to
+the cloudinit so you don't have to do it manually if you use that yaml to create your
+VMs):
 
 ```
 echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
