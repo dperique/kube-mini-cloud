@@ -1,0 +1,30 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    special: vmi-bionic-mk1
+    kubevirt.io/domain: bionic-mk1
+  name: vmi-bionic-mk1
+  namespace: kubevirt
+
+spec:
+  #nodeSelector:
+  #  kubevirt-bm: "true"
+  domain:
+    devices:
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 8192M
+        cpu: "4"
+  terminationGracePeriodSeconds: 0
+  dnsPolicy: Default
+  volumes:
+  - containerDisk:
+      image: kube-cm/ubuntu-bionic-minikube:0.154
+    name: containerdisk
