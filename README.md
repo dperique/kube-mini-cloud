@@ -502,11 +502,16 @@ Using the [container-register-disks](https://github.com/kubevirt/kubevirt/blob/m
 doc, I did this on my kube-test-10 k8s host.
 
 ```
+# Resize the image to give the VM 15G of disk space
+qemu-img resize ubuntu-xenial-minikube-0000000045-20G.qcow2 +15G
+
+# Create the Dockerfile with container-disk wrapper
 cat << END > Dockerfile
 FROM kubevirt/container-disk-v1alpha
 ADD ubuntu-xenial-minikube-0000000045.qcow2 /disk <-- this is the DIB image
 END
 
+# Build the image (I build it on the host so I don't have to push)
 sudo docker build -t kube-cm/ubuntu-xenial-minikube:0.45 .
 ```
 
