@@ -1,0 +1,42 @@
+
+[kube-master]
+KUBE_NAME-k8s-node-1
+KUBE_NAME-k8s-node-2
+KUBE_NAME-k8s-node-3
+
+[etcd]
+KUBE_NAME-k8s-node-1
+KUBE_NAME-k8s-node-2
+KUBE_NAME-k8s-node-3
+KUBE_NAME-k8s-node-4
+KUBE_NAME-k8s-node-5
+
+# Used by custom Kubernetes cluster; remove if not used
+[etcd-data]
+KUBE_NAME-k8s-node-1
+KUBE_NAME-k8s-node-2
+KUBE_NAME-k8s-node-3
+KUBE_NAME-k8s-node-4
+KUBE_NAME-k8s-node-5
+
+[kube-node]
+KUBE_NAME-k8s-node-1
+KUBE_NAME-k8s-node-2
+KUBE_NAME-k8s-node-3
+KUBE_NAME-k8s-node-4
+KUBE_NAME-k8s-node-5
+
+# Used by custom Kubernetes cluster; remove if not used
+[database]
+KUBE_NAME-k8s-node-1
+KUBE_NAME-k8s-node-2
+KUBE_NAME-k8s-node-3
+
+[k8s-cluster:children]
+kube-node
+kube-master
+
+# Used by custom Kubernetes cluster; remove if not used
+[prometheus]
+KUBE_NAME-k8s-node-4
+KUBE_NAME-k8s-node-5
