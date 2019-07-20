@@ -20,6 +20,7 @@ metadata:
   labels:
     app: SOMENAME-ssh
 spec:
+  # for i in 1 2 3 4 5 ; do kubectl label node --overwrite kube-stack-k8s-node-$i kuul-type=ssh-mode ; done
   nodeSelector:
     kuul-type: ssh-mode
   containers:
