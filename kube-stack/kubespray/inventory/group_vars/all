@@ -1,0 +1,4 @@
+# This file tested on kubespray v2.7.0
+
+# This will build the local container registry.
+registry_enabled: true

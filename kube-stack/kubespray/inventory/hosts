@@ -1,0 +1,28 @@
+kube-stack-k8s-node-1 ansible_host=192.169.203.127 ip=192.169.203.127 ansible_user=ubuntu
+kube-stack-k8s-node-2 ansible_host=192.169.203.84  ip=192.169.203.84  ansible_user=ubuntu
+kube-stack-k8s-node-3 ansible_host=192.169.203.24  ip=192.169.203.24  ansible_user=ubuntu
+kube-stack-k8s-node-4 ansible_host=192.169.203.72  ip=192.169.203.72  ansible_user=ubuntu
+kube-stack-k8s-node-5 ansible_host=192.169.203.116 ip=192.169.203.116 ansible_user=ubuntu
+
+[kube-master]
+kube-stack-k8s-node-1
+kube-stack-k8s-node-2
+kube-stack-k8s-node-3
+
+[etcd]
+kube-stack-k8s-node-1
+kube-stack-k8s-node-2
+kube-stack-k8s-node-3
+kube-stack-k8s-node-4
+kube-stack-k8s-node-5
+
+[kube-node]
+kube-stack-k8s-node-1
+kube-stack-k8s-node-2
+kube-stack-k8s-node-3
+kube-stack-k8s-node-4
+kube-stack-k8s-node-5
+
+[k8s-cluster:children]
+kube-node
+kube-master
