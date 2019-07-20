@@ -1,0 +1,29 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    special: vmi-bionic1
+    kubevirt.io/domain: bionic1
+  name: vmi-bionic1
+  namespace: zuul-ci
+
+spec:
+  #nodeSelector:
+  #  kubevirt-bm: "true"
+  domain:
+    devices:
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 8192M
+        cpu: "4"
+  terminationGracePeriodSeconds: 0
+  volumes:
+  - containerDisk:
+      image: localhost:5000/kube-stack/ubuntu-bionic:072019
+    name: containerdisk
