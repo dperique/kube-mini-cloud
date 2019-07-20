@@ -32,6 +32,18 @@ went with 5 servers with 56 cores and 256G RAM each for a Kubernetes cluster wit
 a total of 280 cores and 1.2 Terabytes of RAM).  If things go well, I plan to add
 more nodes.
 
+On the hosts that will be running VMs using kubevirt
+[Enable nested virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/index.html)
+like this:
+
+```
+  sudo su
+  modprobe -r kvm_intel
+  modprobe kvm_intel nested=1
+  vi /etc/modprobe.d/kvm.conf
+    options kvm_intel nested=1  <-- adding this ensures it's set on boot
+```
+
 In your group_vars/all, set `registry_enabled: true` so that kubespray
 will build a container registry on the Kubernetes cluster.
 
