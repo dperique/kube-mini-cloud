@@ -10,9 +10,9 @@ apiVersion: kubevirt.io/v1alpha3
 kind: VirtualMachineInstance
 metadata:
   labels:
-    special: vmi-minikube1
-    kubevirt.io/domain: minikube1
-  name: vmi-minikube1
+    special: vmi-xenial-mk1
+    kubevirt.io/domain: xenial-minikube
+  name: vmi-xenial-mk1
 
 spec:
   domain:
