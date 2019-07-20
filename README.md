@@ -771,7 +771,7 @@ cluster.
     it using our local container registry:
 
     ```
-    docker build -t localhost:5000/dennis/cont:0.1 .
+    sudo docker build -t localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1 .
     ```
 
 * Method 2: On another machine that has kubectl access to the kube-stack Kubernetes cluster:
@@ -790,25 +790,84 @@ cluster.
     Build your image as in Method 1:
 
     ```
-    docker build -t localhost:5000/dennis/cont:0.1 .
+    sudo docker build -t localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1 .
     ```
 
 After building your Docker image using one of the above methods, do this to push your docker image
 to the local container registry (in my case, I'm calling my image "dperique/cont:0.1"):
 
 ```
-docker push -t localhost:5000/dperique/cont:0.1 .
+sudo docker push localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1
 ```
 
 In your podspec, specify your image as:
 
 ```
-image: localhost:5000/dperique/cont:0.1 .
+image: localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1 .
 ```
 
 ## Create VM Images
 
+I have a machine called "nodepool" that runs nodepool and Disk Image Builder.  This
+machine builds my custom images used for running CI tests and creates qcow2 files.
+I will copy my custom images from
+the nodepool machine and resize them, using `qemu-image`, to 20G (so when the VM boots,
+it has 20G of disk).
+
 You can create VM images using any of the image types supported by kubevirt.
-In my case, I create images like [this](https://github.com/dperique/kube-mini-cloud#create-an-custom-image-from-my-image).
+Refer to the [example above](https://github.com/dperique/kube-mini-cloud#create-an-custom-image-from-my-image).
+
+Resize the images as mentioned above:
+
+```
+qemu-img resize ubuntu-16.04-minimal-cloudimg-amd64-disk1.img +20G
+qemu-img resize ubuntu-xenial-minikube-0000000045.qcow2 +20G
+qemu-img resize ubuntu-bionic-minikube-0000000154.qcow2 +20G
+```
+
+I will copy these images to one of my kube-stack nodes (node 5) and build the
+kubevirt docker images.  Here are my three Dockerfiles for the three images I
+intend to use:
+
+```
+ubuntu@kube-stack-k8s-node-5:~$ cat Dockerfile.16.04-min
+FROM kubevirt/container-disk-v1alpha
+ADD ubuntu-16.04-minimal-cloudimg-amd64-disk1.img /disk
+
+ubuntu@kube-stack-k8s-node-5:~$ cat Dockerfile.xenial-minikube
+FROM kubevirt/container-disk-v1alpha
+ADD ubuntu-xenial-minikube-0000000045.qcow2 /disk
+
+ubuntu@kube-stack-k8s-node-5:~$ cat Dockerfile.bionic-minikube
+FROM kubevirt/container-disk-v1alpha
+ADD ubuntu-bionic-minikube-0000000154.qcow2 /disk
+```
+
+Build each image (I include the Pod image from above for completeness):
+
+```
+rm -f Dockerfile
+ln -s Dockerfile.16.04-min Dockerfile
+sudo docker build -t localhost:5000/kube-stack/ubuntu-16.04-minimal:072019 .
+
+rm -f Dockerfile
+ln -s Dockerfile.xenial-minikube Dockerfile
+sudo docker build -t localhost:5000/kube-stack/ubuntu-xenial-minikube:072019 .
+
+rm -f Dockerfile
+ln -s Dockerfile.bionic-minikube Dockerfile
+sudo docker build -t localhost:5000/kube-stack/ubuntu-bionic-minikube:072019 .
+
+rm -f Dockerfile
+ln -s Dockerfile.16.04-ssh-Pod Dockerfile
+sudo docker build -t localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1 .
+```
 
 Push the images to the local container registry as mentioned in the previous section.
+
+```
+sudo docker push localhost:5000/kube-stack/ubuntu-16.04-minimal:072019
+sudo docker push localhost:5000/kube-stack/ubuntu-xenial-minikube:072019
+sudo docker push localhost:5000/kube-stack/ubuntu-bionic-minikube:072019
+sudo docker push localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1
+```
