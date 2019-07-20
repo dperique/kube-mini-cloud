@@ -1,0 +1,27 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    special: vmi-xenial1
+    kubevirt.io/domain: xenial-minikube
+  name: vmi-xenial1
+  namespace: zuul-ci
+
+spec:
+  domain:
+    devices:
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 8192M
+        cpu: "4"
+  terminationGracePeriodSeconds: 0
+  volumes:
+  - containerDisk:
+      image: localhost:5000/kube-stack/ubuntu-xenial:072019
+    name: containerdisk
