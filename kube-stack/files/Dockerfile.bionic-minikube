@@ -1,0 +1,2 @@
+FROM kubevirt/container-disk-v1alpha
+ADD ubuntu-bionic-minikube-0000000154.qcow2 /disk
