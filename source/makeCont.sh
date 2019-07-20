@@ -60,6 +60,7 @@ for i in $(kubectl -n $NAMESPACE --context $CONTEXT get svc --no-headers | awk '
 
 done
 
+thePwd=`pwd`
 echo ""
-echo "alias ssh=\"ssh -F ~/ssh_image/ssh_config\""
+echo "alias sshp=\"ssh -F $thePwd/ssh_config\""
 echo ""
