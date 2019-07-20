@@ -205,7 +205,7 @@ The last line waits for the `kubevirt` of type `kv` to be in Ready state.
 
 Optional: Keep
 [patch virt-handler](https://github.com/kubevirt/user-guide/blob/master/administration/intro.adoc#restricting-virt-handler-daemonset)
-in mind in case you want to patch the virt-hanlder daemonset so it will only run kubevirt on
+in mind in case you want to patch the virt-handler daemonset so it will only run kubevirt on
 certain Kubernetes nodes. Pasted here for convenience:
 
 For example, to restrict the DaemonSet to only nodes with the "region=primary" label:
@@ -236,4 +236,59 @@ daemonset.extensions/virt-handler   5         5         5         5            5
 
 NAME                            AGE       PHASE
 kubevirt.kubevirt.io/kubevirt   2m        Deployed
+```
+
+In case you ever need to un-install kubevirt, do this:
+
+```
+$ kubectl delete -f https://github.com/kubevirt/kubevirt/releases/download/${RELEASE}/kubevirt-cr.yaml
+$ kubectl delete -f https://github.com/kubevirt/kubevirt/releases/download/${RELEASE}/kubevirt-operator.yaml
+```
+
+Install [krew plugin](https://github.com/kubernetes-sigs/krew/#installation) so you can get virtctl:
+
+```
+set -x; cd "$(mktemp -d)" &&
+  curl -fsSLO "https://storage.googleapis.com/krew/v0.2.1/krew.{tar.gz,yaml}" &&
+  tar zxvf krew.tar.gz &&
+  ./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" install \
+    --manifest=krew.yaml --archive=krew.tar.gz
+```
+
+Add this to your ~/.bashrc then restart your shell:
+
+```
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+```
+
+Install virtctl:
+
+```
+$ kubectl krew install virt
+Updated the local copy of plugin index.
+Installing plugin: virt
+CAVEATS:
+\
+ |  virt plugin is a wrapper for virtctl originating from the KubeVirt project. In order to use virtctl you will
+ |  need to have KubeVirt installed on your Kubernetes cluster to use it. See https://kubevirt.io/ for details
+ |  
+ |  Run
+ |  
+ |    kubectl virt help
+ |  
+ |  to get an overview of the available commands
+ |  
+ |  See
+ |  
+ |    https://kubevirt.io/user-guide/docs/latest/using-virtual-machines/graphical-and-console-access.html
+ |  
+ |  for a usage example
+/
+Installed plugin: virt
+```
+
+Now you can use virtctl like this:
+
+```
+kubectl virt help
 ```
