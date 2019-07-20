@@ -5,7 +5,7 @@
 #
 # Argument one is the name of the Kubernetes cluster.
 #
-# Produces an output file call $A_FILE (inventory99.yaml).
+# Produces an output file called $A_FILE (inventory99.yaml).
 # Create the five VMs first using the Kubernetes name and this will extract
 # the IP addresses and then create an inventory for use with kubespray.
 #
@@ -13,7 +13,7 @@ KUBE_NAME=$1
 A_FILE=inventory99.yaml
 let count=1
 echo > $A_FILE
-for anIP in $(kubectl -n kubevirt get vmi|grep ci-kube2|awk '{print $4}'); do
+for anIP in $(kubectl -n kubevirt get vmi|grep $KUBE_NAME|awk '{print $4}'); do
   if [[ "$count" == "4" ]]; then
     echo "${KUBE_NAME}-k8s-node-${count} ansible_host=${anIP} ip=${anIP} ansible_user=ubuntu database_node_ord=${count} prometheus_node_ord=4" >> $A_FILE
     let count=$count+1
