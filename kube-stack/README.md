@@ -43,7 +43,7 @@ section.
 
 ## Setup the storage for your container registry
 
-Pick a Kubernetes node to store your images.  On that node, create a subdir to hold
+Pick a Kubernetes node (I use node 5) to store your images.  On that node, create a subdir to hold
 the container registry data, then create the PV and PVC for it:
 
 ```
