@@ -17,11 +17,14 @@ fi
 anAction=$1
 aName=$2
 anImage=$3
+NAMESPACE=kuul-stage
+CONTEXT="Please set your kubectl context"
 
 if [[ "$anAction" == "create" ]]; then
-  cat 64ssh.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl apply --context kube-test -f -
+  cat 64ssh.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl apply --context $CONTEXT -f -
+
 else
-  cat 64ssh.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl delete --context kube-test -f -
+  cat 64ssh.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl delete --context $CONTEXT -f -
 fi
 
 echo ""
@@ -42,9 +45,9 @@ echo "  HostName 192.168.203.108" >> ssh_config
 echo "  User ubuntu" >> ssh_config
 echo "  IdentityFile ~/.ssh/kube-test.rsa" >> ssh_config
 
-for i in $(kubectl -n kuul-stage --context kube-test get svc --no-headers | awk '{print $1}'); do
+for i in $(kubectl -n $NAMESPACE --context $CONTEXT get svc --no-headers | awk '{print $1}'); do
 
-  theIP=$(kubectl -n kuul-stage --context kube-test get svc $i -o jsonpath="{.spec.clusterIP}")
+  theIP=$(kubectl -n $NAMESPACE --context $CONTEXT get svc $i -o jsonpath="{.spec.clusterIP}")
   echo "" >> ssh_config
   echo "Host $i" >> ssh_config
   echo "  User ubuntu" >> ssh_config
