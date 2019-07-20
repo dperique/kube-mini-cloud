@@ -132,6 +132,16 @@ rm -f Dockerfile
 ln -s Dockerfile.kuul_zuul_periodics_ssh_k8s Dockerfile
 sudo docker build -t localhost:5000/kube-stack/kuul_zuul_periodics:v2.8b-ssh .
 sudo docker push localhost:5000/kube-stack/kuul_zuul_periodics:v2.8b-ssh
+
+rm -f Dockerfile
+ln -s Dockerfile.xenial Dockerfile
+sudo docker build -t localhost:5000/kube-stack/ubuntu-xenial:072019 .
+sudo docker push localhost:5000/kube-stack/ubuntu-xenial:072019
+
+rm -f Dockerfile
+ln -s Dockerfile.bionic Dockerfile
+sudo docker build -t localhost:5000/kube-stack/ubuntu-bionic:072019 .
+sudo docker push localhost:5000/kube-stack/ubuntu-bionic:072019
 ```
 
 ## Create VM Images
@@ -307,6 +317,9 @@ kubectl virt help
 
 We will organize our VMs by namespace.
 
+We are creating VMs that we can use to install various things on including some stuff
+we used from the [bonnyci](https://github.com/BonnyCI) project.
+
 ```
 kubectl create ns k8s-test
 kubectl create ns demo
@@ -386,4 +399,62 @@ See "man sudo_root" for details.
 
 bonnyci@dp-bonny1:~$ logout
 
+$ bash -x makeVM.sh
++ aFile=wrig-ubuntu-16.04-minimal.yaml
++ for i in '{1..5}'
++ cat wrig-ubuntu-16.04-minimal.yaml
++ kubectl apply -f -
++ sed s/AVALUE/ci-kube-1/
+virtualmachineinstance.kubevirt.io/ci-kube-1 created
++ for i in '{1..5}'
++ kubectl apply -f -
++ sed s/AVALUE/ci-kube-2/
++ cat wrig-ubuntu-16.04-minimal.yaml
+virtualmachineinstance.kubevirt.io/ci-kube-2 created
++ for i in '{1..5}'
++ kubectl apply -f -
++ sed s/AVALUE/ci-kube-3/
++ cat wrig-ubuntu-16.04-minimal.yaml
+virtualmachineinstance.kubevirt.io/ci-kube-3 created
++ for i in '{1..5}'
++ cat wrig-ubuntu-16.04-minimal.yaml
++ sed s/AVALUE/ci-kube-4/
++ kubectl apply -f -
+virtualmachineinstance.kubevirt.io/ci-kube-4 created
++ for i in '{1..5}'
++ kubectl apply -f -
++ sed s/AVALUE/ci-kube-5/
++ cat wrig-ubuntu-16.04-minimal.yaml
+virtualmachineinstance.kubevirt.io/ci-kube-5 created
+
+
+$ for i in {1..5} ; do ./makeCont.sh create dp-bonny$i default ; done
+
+service/dp-bonny1 unchanged
+pod/dp-bonny1 configured
+
+      dp-bonny1   10.233.35.187
+
+...
+alias sshp="ssh -F /home/bonnyci/git/kube-mini-cloud/kube-stack/files/ssh_config"
+
+$ kubectl get vmi --all-namespaces
+NAMESPACE   NAME             AGE   PHASE     IP              NODENAME
+k8s-test    ci-kube-1        4m    Running   10.233.82.141   kube-stack-k8s-node-1
+k8s-test    ci-kube-2        4m    Running   10.233.87.96    kube-stack-k8s-node-4
+k8s-test    ci-kube-3        4m    Running   10.233.82.142   kube-stack-k8s-node-1
+k8s-test    ci-kube-4        4m    Running   10.233.71.224   kube-stack-k8s-node-2
+k8s-test    ci-kube-5        4m    Running   10.233.114.99   kube-stack-k8s-node-3
+zuul-ci     vmi-bionic-mk1   2h    Running   10.233.71.223   kube-stack-k8s-node-2
+zuul-ci     vmi-bionic1      8m    Running   10.233.114.98   kube-stack-k8s-node-3
+zuul-ci     vmi-xenial-mk1   2h    Running   10.233.87.201   kube-stack-k8s-node-5
+zuul-ci     vmi-xenial1      13m   Running   10.233.87.95    kube-stack-k8s-node-4
+
+$ kubectl get po -n kuul-pods
+NAME        READY   STATUS    RESTARTS   AGE
+dp-bonny1   1/1     Running   0          117m
+dp-bonny2   1/1     Running   0          104s
+dp-bonny3   1/1     Running   0          103s
+dp-bonny4   1/1     Running   0          101s
+dp-bonny5   1/1     Running   0          98s
 ```
