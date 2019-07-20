@@ -124,6 +124,16 @@ In your podspec, specify your image as:
 image: localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1 .
 ```
 
+Another example of building an image for Kuul periodic jobs:
+
+```
+git clone git@github.someco.com:Someplace/Kuul_Zuul_periodics.git
+rm -f Dockerfile
+ln -s Dockerfile.kuul_zuul_periodics_ssh_k8s Dockerfile
+sudo docker build -t localhost:5000/kube-stack/kuul_zuul_periodics:v2.8b-ssh .
+sudo docker push localhost:5000/kube-stack/kuul_zuul_periodics:v2.8b-ssh
+```
+
 ## Create VM Images
 
 I have a machine called "nodepool" that runs nodepool and Disk Image Builder.  This
@@ -291,4 +301,89 @@ Now you can use virtctl like this:
 
 ```
 kubectl virt help
+```
+
+## Create Namespaces and VMs
+
+We will organize our VMs by namespace.
+
+```
+kubectl create ns k8s-test
+kubectl create ns demo
+kubectl create ns zuul-ci
+kubectl create ns kuul-pods
+
+kubectl apply -f vmi-fedora.yaml
+kubectl -n demo get po -o wide
+
+$ kubectl get vmi -n demo
+NAME         AGE   PHASE     IP              NODENAME
+vmi-fedora   54s   Running   10.233.71.222   kube-stack-k8s-node-2
+
+$ kubectl virt console vmi-fedora -n demo
+
+$ kubectl get po -n demo -o wide
+NAME                             READY   STATUS    RESTARTS   AGE     IP              NODE
+virt-launcher-vmi-fedora-l7cjj   2/2     Running   0          6m20s   10.233.71.222   kube-stack-k8s-node-2
+
+$ kubectl delete po virt-launcher-vmi-fedora-l7cjj -n demo
+pod "virt-launcher-vmi-fedora-l7cjj" deleted
+
+
+$ kubectl get vmi -n zuul-ci
+NAME             AGE   PHASE     IP              NODENAME
+vmi-xenial-mk1   26s   Running   10.233.87.201   kube-stack-k8s-node-5
+
+$ kubectl get po -o wide -n zuul-ci
+NAME                                 READY   STATUS    RESTARTS   AGE   IP              NODE
+virt-launcher-vmi-xenial-mk1-ddb62   2/2     Running   0          32s   10.233.87.201   kube-stack-k8s-node-5
+
+$ kubectl apply -f ubuntu-xenial-minikube.yaml
+$ kubectl apply -f ubuntu-bionic-minikube.yaml
+
+$ kubectl get vmi --all-namespaces
+NAMESPACE   NAME             AGE   PHASE     IP              NODENAME
+zuul-ci     vmi-bionic-mk1   3m    Running   10.233.71.223   kube-stack-k8s-node-2
+zuul-ci     vmi-xenial-mk1   10m   Running   10.233.87.201   kube-stack-k8s-node-5
+
+
+
+$ kubectl apply -f kuul-secrets-wrig.yaml -n kuul-pods
+secret/kuul-secrets created
+
+
+$ ./makeCont.sh create dp-bonny1 default
+
+      dp-bonny1   10.233.35.187
+
+alias sshp="ssh -F /home/bonnyci/git/kube-mini-cloud/kube-stack/files/ssh_config"
+
+$ cat ssh_config
+# This is a generated file
+Host kube-stack-4
+  HostName 10.171.203.72
+  User ubuntu
+  IdentityFile ~/.ssh/kube-stack.rsa
+
+Host dp-bonny1
+  User bonnyci
+  HostName 10.233.35.187
+  StrictHostKeyChecking no
+  ProxyCommand ssh -A -W %h:%p kube-stack-4
+  IdentityFile ~/.ssh/junk.id_rsa
+
+$ alias sshp="ssh -F /home/bonnyci/git/kube-mini-cloud/kube-stack/files/ssh_config"
+
+$ sshp dp-bonny1
+Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.4.0-154-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+Last login: Sat Jul 20 18:03:41 2019 from 10.171.203.72
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+bonnyci@dp-bonny1:~$ logout
+
 ```
