@@ -2,7 +2,8 @@
 
 ## Introduction
 
-In creating the Kuul Periodic System, I found that it would be nice to be able to debug
+In creating the [Kuul Periodic System](https://github.com/dperique/Kuul_periodics),
+I found that it would be nice to be able to debug
 certain containers used to run periodic scripts in a way that is interactive (e.g., being
 about to interactively start and abort the script via control-c, and tweak files on the
 fly is nice for debugging, etc.).  So I started
@@ -37,6 +38,9 @@ other fancy things that Openstack provides.
 
 I already had a k8s cluster but added a big 64CPU/96G machine as a worker node to run Pods
 and VMs.
+
+NOTE: after researching and writing this README, I eventually created a ["Kube Stack" with
+much more streamlined instructions](https://github.com/dperique/kube-mini-cloud/tree/master/kube-stack).
 
 ## Pods running ssh
 
