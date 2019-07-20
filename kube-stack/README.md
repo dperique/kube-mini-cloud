@@ -189,3 +189,51 @@ sudo docker push localhost:5000/kube-stack/ubuntu-xenial-minikube:072019
 sudo docker push localhost:5000/kube-stack/ubuntu-bionic-minikube:072019
 sudo docker push localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1
 ```
+
+## Install kubevirt on kube-stack
+
+Install the version 0.19 of kubevirt:
+
+```
+kubectl config use-context kube-stack
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/v0.19.0/kubevirt-operator.yaml
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/v0.19.0/kubevirt-cr.yaml
+kubectl -n kubevirt wait kv kubevirt --for condition=Ready
+```
+
+The last line waits for the `kubevirt` of type `kv` to be in Ready state.
+
+Optional: Keep
+[patch virt-handler](https://github.com/kubevirt/user-guide/blob/master/administration/intro.adoc#restricting-virt-handler-daemonset)
+in mind in case you want to patch the virt-hanlder daemonset so it will only run kubevirt on
+certain Kubernetes nodes. Pasted here for convenience:
+
+For example, to restrict the DaemonSet to only nodes with the "region=primary" label:
+
+```
+kubectl patch ds/virt-handler -n kubevirt -p '{"spec": {"template": {"spec": {"nodeSelector": {"region": "primary"}}}}}'
+```
+
+You should eventually see:
+
+```
+$ kubectl -n kubevirt get po,ds,kv
+NAME                                  READY     STATUS    RESTARTS   AGE
+pod/virt-api-6fb795dbd9-br8gp         1/1       Running   0          2m32s
+pod/virt-api-6fb795dbd9-jsc8f         1/1       Running   0          2m32s
+pod/virt-controller-7cc5b46b9-kdlcp   1/1       Running   0          2m7s
+pod/virt-controller-7cc5b46b9-p62hr   1/1       Running   0          2m7s
+pod/virt-handler-br8bw                1/1       Running   0          2m7s
+pod/virt-handler-ml9zj                1/1       Running   0          2m7s
+pod/virt-handler-r7j9c                1/1       Running   0          2m7s
+pod/virt-handler-r864k                1/1       Running   0          2m7s
+pod/virt-handler-zc5jm                1/1       Running   0          2m7s
+pod/virt-operator-7b5488c788-b9v5r    1/1       Running   0          2m53s
+pod/virt-operator-7b5488c788-r7z4q    1/1       Running   0          2m53s
+
+NAME                                DESIRED   CURRENT   READY     UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.extensions/virt-handler   5         5         5         5            5           <none>          2m7s
+
+NAME                            AGE       PHASE
+kubevirt.kubevirt.io/kubevirt   2m        Deployed
+```
