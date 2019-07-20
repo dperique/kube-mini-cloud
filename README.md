@@ -256,7 +256,7 @@ $ kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/v0.19.
 kubevirt.kubevirt.io/kubevirt created
 ```
 
-In my caes, I have several nodes; the `virt-handler` daemonset will create a virt-hanlder
+In my case, I have several nodes; the `virt-handler` daemonset will create a virt-handler
 pod on every k8s node.  Later, I'll make it so that only my kube-test-10 k8s gets it but
 this is what you'll see:
 
