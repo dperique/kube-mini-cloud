@@ -21,10 +21,10 @@ NAMESPACE=kuul-stage
 CONTEXT="Please set your kubectl context"
 
 if [[ "$anAction" == "create" ]]; then
-  cat 64ssh.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl apply --context $CONTEXT -f -
+  cat pod-template.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl apply --context $CONTEXT -f -
 
 else
-  cat 64ssh.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl delete --context $CONTEXT -f -
+  cat pod-template.yaml | sed -e "s/SOMENAME/$aName/g" -e "s,SOMEIMAGE,$anImage,g" | kubectl delete --context $CONTEXT -f -
 fi
 
 echo ""
