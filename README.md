@@ -119,7 +119,7 @@ across Pod restarts.
 I use a bash script (in source/makeCont.sh) that uses a Pod template and kubectl to create
 and destroy the Pods.  This script also generates the ssh config after each create/destroy.
 
-The Pod template (in source/64ssh.yaml) is setup so that we can use simple sed substitution
+The Pod template (in source/pod-template.yaml) is setup so that we can use simple sed substitution
 to generate unique Pods.  The Pods have these characteristics:
 
 * The template mounts a secrets volume so that you can keep your Docker images free of
