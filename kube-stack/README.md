@@ -56,15 +56,16 @@ section.
 ## Setup the storage for your container registry
 
 Pick a Kubernetes node (I use node 5) to store your images.  On that node, create a subdir to hold
-the container registry data, then create the PV and PVC for it:
+the container registry data, then apply the PV and PVC yamls to create a PV and PVC for the
+"registry" Pod:
 
 ```
-mkdir /opt/registry-data
-kubectl apply -f registry-pvc.yaml 
-kubectl apply -f registry-pv.yaml 
+ssh (hostname of your node 5) ; mkdir /opt/registry-data
+kubectl apply -f files/registry-pvc.yaml
+kubectl apply -f files/registry-pv.yaml
 ```
 
-NOTE: the yaml files are in the `source` subdir of this repo.
+NOTE: the yaml files are in the `kube-stack/files` subdir of this repo.
 
 Delete the Pending `registry` pod.  After it restarts, it will be in Running
 state.
