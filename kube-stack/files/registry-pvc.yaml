@@ -1,7 +1,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: kube-registry-pvc
+  name: registry-pvc
   namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
