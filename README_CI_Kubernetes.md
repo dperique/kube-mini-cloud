@@ -79,6 +79,7 @@ kube_service_addresses: 10.239.0.0/18
 kube_pods_subnet: 10.239.64.0/18
 dnsmasq_dns_server: 10.239.0.2
 skydns_server: 10.239.0.3
+calico_mtu: 1400
 ```
 
 Those values are different from the 10.233.0.0 default values in kubespray because
