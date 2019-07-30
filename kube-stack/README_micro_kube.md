@@ -71,10 +71,10 @@ ci-kube-4   17h       Running   10.233.67.81   kube-test-10
 ci-kube-5   17h       Running   10.233.67.79   kube-test-10
 ```
 
-## Setup a container to run kubespray
+## Setup a Pod or VM to run kubespray
 
-Create a container using `files/makeCont.sh` and install kubespray, create an inventory,
-and include these variables to be used in kubespray:
+Create a Pod using `files/makeCont.sh` (or a VMI using kubevirt) and install kubespray,
+create an inventory, and include these variables to be used in kubespray:
 
 ```
 kube_service_addresses: 10.239.0.0/18
