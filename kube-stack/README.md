@@ -14,14 +14,23 @@ Kubernetes cluster for my Pods and then run my VMs using Openstack.  This has wo
 well in the past but I like the idea of combining them in one envirnoment.
 
 In my case, we will use kube-stack to build Pods and VMs that we can ssh into
-and run tests including:
+and do things like:
 
-* kubespray tests, including building VMs for installing Kubernetes via kubespray
-  run from a Pod
+* Kubernetes tests including building "micro kube clusters" running on kubevirt VMIs (VMs)
+  (i.e., kube in kube)
+  * We run kubespray on a Pod to install Kubernetes onto 5 kubevirt VMIs (VMs)
+  * We can then run these Kubernetes tests:
+    * Kubernetes/docker upgrades/downgrades
+    * Kube-ops runbooks:
+      * Adding/removing Kubernetes nodes
+      * Recovering or replacing broken Kubernetes nodes
+    * Application installations, running tests on those applications
 * CI tests that require a full VM (I hope to run tests in some automated
   way to supplement our overworked CI system).
+  * Developing, testing, and debugging of the CI test scripts
 * CD tests on Pods that will eventually run on a
   [Kuul Periodic System](https://github.com/dperique/Kuul_periodics)
+  * Developing, testing, and debugging of the CD scripts
 
 We will also use it (in an experimenal/exploratory way) to give out VMs for
 aribitrary uses.  I'm curious how to can be used to supplement our Openstack
