@@ -1,7 +1,8 @@
 # Creating Micro Kubernetes Clusters using Kubespray
 
 A "Micro Kubernetes Cluster" is just another Kubernetes cluster running inside
-the Kube Stack Kubernetes cluster -- i.e., kube in kube.
+the [Kube Stack](https://github.com/dperique/kube-mini-cloud/tree/master/kube-stack#definition-of-kube-stack)
+Kubernetes cluster -- i.e., kube in kube.
 
 Creating a Kubernetes cluster inside (i.e., hosted on) a Kube Stack is identical
 to creating it on baremetal servers or VMs outside of Kube Stack -- except for

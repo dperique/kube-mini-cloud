@@ -41,7 +41,7 @@ We will also use it (in an experimenal/exploratory way) to give out VMs for
 aribitrary uses.  I'm curious how to can be used to supplement our Openstack
 cluster for general VM use.
 
-## Creating the Kube Stack Kubernetes cluster
+## Create the Kube Stack Kubernetes cluster
 
 In my case, I use kubespray v2.7.0.  You can use any tool to build the Kubernetes cluster
 including kubeadm, etc.
