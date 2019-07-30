@@ -1,17 +1,23 @@
 # How to Create a Kube Stack
 
-We will stand up a "Kube Stack".  I define a "Kube Stack" as a Kubernetes cluster
-(I call mine
-"kube-stack) built
-with [kubespray](https://github.com/kubernetes-incubator/kubespray) with Pods
-and [kubevirt](https://github.com/kubevirt) VMs on it.
+A "Kube Stack" is a Kubernetes cluster built
+with tools such as [kubespray](https://github.com/kubernetes-incubator/kubespray) populated
+with your custom Pods and VMs running inside Pods using [kubevirt](https://github.com/kubevirt).
 We will also add an on-cluster container registry so we can store all
-of our images locally.
+of our Pod and VM images locally.
+
+The name is a play on some Kubernetes and Openstack basic functionality combined
+into one place.  I like to run my testing scenarios in Pods (for their lightweight
+characteristics) but for scenarios that require applications (e.g., minikube) that
+cannot run in a Pod, I need VMs.  The way I would do this testing is to create a
+Kubernetes cluster for my Pods and then run my VMs using Openstack.  This has worked
+well in the past but I like the idea of combining them in one envirnoment.
 
 In my case, we will use kube-stack to build Pods and VMs that we can ssh into
 and run tests including:
 
-* kubespray tests
+* kubespray tests, including building VMs for installing Kubernetes via kubespray
+  run from a Pod
 * CI tests that require a full VM (I hope to run tests in some automated
   way to supplement our overworked CI system).
 * CD tests on Pods that will eventually run on a
@@ -21,10 +27,10 @@ We will also use it (in an experimenal/exploratory way) to give out VMs for
 aribitrary uses.  I'm curious how to can be used to supplement our Openstack
 cluster for general VM use.
 
-It reminds of much of what we use Openstack for but also has the concept of Pods.
-Hence, the name "Kube Stack".
-
 ## Create the Kubernetes cluster
+
+In my case, I use kubespray v2.7.0.  You can use any tool to build the Kubernetes cluster
+including kubeadm, etc.
 
 Get some properly sized baremetal servers and 
 [prepare them](https://github.com/dperique/kubespray_preparation) for kubespray. I
@@ -47,9 +53,9 @@ like this:
 In your group_vars/all, set `registry_enabled: true` so that kubespray
 will build a container registry on the Kubernetes cluster.
 
-Run kubespray (I'm using kubespray v2.7.0).
+Run kubespray (I'm using kubespray v2.7.0) on your baremetal servers.
 
-When it finishes, the `registry` pod in the kube-system namespace will be in
+When kubespray finishes, the `registry` pod in the kube-system namespace will be in
 Pending state because there is no PVC for it -- we will fix this in the next
 section.
 
@@ -65,7 +71,9 @@ kubectl apply -f files/registry-pvc.yaml
 kubectl apply -f files/registry-pv.yaml
 ```
 
-NOTE: the yaml files are in the `kube-stack/files` subdir of this repo.
+NOTE: the yaml files are in the `kube-stack/files` subdir of this repo.  The yaml
+for the PV has kube-stack-node-5 hardcoded in it so change it if you used a different
+name.
 
 Delete the Pending `registry` pod.  After it restarts, it will be in Running
 state.
@@ -125,7 +133,7 @@ In your podspec, specify your image as:
 image: localhost:5000/kube-stack/ubuntu-16.04-ssh:0.1 .
 ```
 
-Another example of building an image for Kuul periodic jobs:
+Here is an example of building a Docker image for Kuul Zuul Periodic jobs:
 
 ```
 git clone git@github.someco.com:Someplace/Kuul_Zuul_periodics.git
@@ -133,7 +141,11 @@ rm -f Dockerfile
 ln -s Dockerfile.kuul_zuul_periodics_ssh_k8s Dockerfile
 sudo docker build -t localhost:5000/kube-stack/kuul_zuul_periodics:v2.8b-ssh .
 sudo docker push localhost:5000/kube-stack/kuul_zuul_periodics:v2.8b-ssh
+```
 
+Examples of building VMI images using the Dockerfile samples in this repo:
+
+```
 rm -f Dockerfile
 ln -s Dockerfile.xenial Dockerfile
 sudo docker build -t localhost:5000/kube-stack/ubuntu-xenial:072019 .
