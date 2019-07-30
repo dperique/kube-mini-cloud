@@ -1,5 +1,7 @@
 # How to Create a Kube Stack
 
+## Definition of "Kube Stack"
+
 A "Kube Stack" is a Kubernetes cluster built
 with tools such as [kubespray](https://github.com/kubernetes-incubator/kubespray) populated
 with your custom Pods and VMs running inside Pods using [kubevirt](https://github.com/kubevirt).
@@ -12,6 +14,8 @@ characteristics) but for scenarios that require applications (e.g., minikube) th
 cannot run in a Pod, I need VMs.  The way I would do this testing is to create a
 Kubernetes cluster for my Pods and then run my VMs using Openstack.  This has worked
 well in the past but I like the idea of combining them in one envirnoment.
+
+## The use-case for Kube Stack
 
 In my case, we will use kube-stack to build Pods and VMs that we can ssh into
 and do things like:
