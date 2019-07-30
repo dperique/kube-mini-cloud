@@ -11,7 +11,9 @@ The only difference is that you first create your VMs using kubevirt:
 
 * one VM to run kubespray (I run kubespray in a Pod but it doesn't matter)
 * N VMs to make up the Kubernetes cluster (I use 5 VMs)
-* Setup the inventory by referring to the micro-kube-inventory subdir in this repo
+* Setup the inventory by referring to the
+  [micro-kube-inventory](https://github.com/dperique/kube-mini-cloud/tree/master/kube-stack/micro-kube-inventory)
+  subdir in this repo
   * I use a script (make_inventory.sh) to generate the inventory file.  This
     is optional but is encouraged because we want to make these micro kube clusters
     as fast as possible using automation.
