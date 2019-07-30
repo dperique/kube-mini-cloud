@@ -40,7 +40,7 @@ micro kube cluster.  Or ssh into one of your Kubernetes masters and run kubectl 
 Our goal is to make a Kubernetes cluster inside Kubernetes so that we can run
 tests on it and then destroy it.  I call this cluster "ci-kube".
 
-My "outer" Kubernetes cluster is called "kube-test".  On kube-test, I have one
+My hosting Kubernetes cluster is called "kube-test".  On kube-test, I have one
 big BM (baremetal) machine where I will run the ci-kube k8s nodes (VMs using
 kubevirt) plus a container to run kubespray to create the Kubernetes cluster.
 
