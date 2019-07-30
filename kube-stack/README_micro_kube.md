@@ -10,7 +10,7 @@ how you obtain the baremetal servers or VMs of course.
 
 The only difference is that you first create your VMs using kubevirt:
 
-* one VM to run kubespray (I run kubespray in a Pod but it doesn't matter)
+* One VM to run kubespray (I run kubespray in a Pod but it doesn't matter)
 * N VMs to make up the Kubernetes cluster (I use 5 VMs)
 * Setup the inventory by referring to the
   [micro-kube-inventory](https://github.com/dperique/kube-mini-cloud/tree/master/kube-stack/micro-kube-inventory)
