@@ -1,0 +1,12 @@
+# Enable local container registry (kubespray v2.7.0 and up)
+registry_enabled: true
+
+# Avoid address collisions with kube-stack.
+kube_service_addresses: 10.239.0.0/18
+kube_pods_subnet: 10.239.64.0/18
+dnsmasq_dns_server: 10.239.0.2
+skydns_server: 10.239.0.3
+
+# Set since we're using ip-in-ip mode with calico, we need
+# to lower the mtu from default of 1500 to 1400.
+calico_mtu: 1400

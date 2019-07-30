@@ -1,0 +1,4 @@
+# See the make_inventory.sh script to generate this file
+# using a grep to match the VMIs.  The make_inventory.sh
+# script will extrac the IPs and generate the kubespray
+# inventory file for you.
