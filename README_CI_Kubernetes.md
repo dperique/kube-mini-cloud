@@ -1,4 +1,41 @@
-# Make a Kubernetes cluster inside Kubernetes (kube in kube)
+# Creating Micro Kubernetes Clusters using Kubespray
+
+A "Micro Kubernetes Cluster" is just another Kubernetes cluster running inside
+the Kube Stack Kubernetes cluster -- i.e., kube in kube.
+
+Creating a Kubernetes cluster inside (i.e., hosted on) a Kube Stack is identical
+to creating it on baremetal servers or VMs outside of Kube Stack -- except for
+how you obtain the baremetal servers or VMs of course.
+
+The only difference is that you first create your VMs using kubevirt:
+
+* one VM to run kubespray (I run kubespray in a Pod but it doesn't matter)
+* N VMs to make up the Kubernetes cluster (I use 5 VMs)
+* Setup the inventory by referring to the micro-kube-inventory subdir in this repo
+  * I use a script (make_inventory.sh) to generate the inventory file.  This
+    is optional but is encouraged because we want to make these micro kube clusters
+    as fast as possible using automation.
+* Pay particular attention to the group_vars/all subdirectory and note two things:
+  * The micro kube cluster Pod address space is different than the Kube Stack address
+    space.  This is to avoid address conflicts.
+  * The micro kube cluster has a smaller MTU than the default.  In my case, I use calico
+    with ip-in-ip.  If you do this, you end up ip-in-ip-in-ip-in-ip which means
+    there are two levels of ip-in-ip encapsulation.  If you keep the orignal MTU, you will
+    get a lot of IP fragmentation and hence horrible (and usually not working)
+    performance problems.
+
+In summary:
+
+* Install [kubespray](https://github.com/kubernetes-incubator/kubespray) on a Pod
+  or VM, setup your defaults (in my case, I'm using kubespray v2.7.0, calico for networking,
+  ip-in-ip)
+* Create your inventory and group_vars/all files
+* Run kubespray
+
+From the VM or Pod running kubespray, you should be able to run kubectl on your
+micro kube cluster.  Or ssh into one of your Kubernetes masters and run kubectl there.
+
+## Example: create a Kubernetes cluster for CI testing
 
 Our goal is to make a Kubernetes cluster inside Kubernetes so that we can run
 tests on it and then destroy it.  I call this cluster "ci-kube".
