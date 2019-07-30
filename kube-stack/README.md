@@ -25,7 +25,7 @@ and do things like:
       * Adding/removing Kubernetes nodes
       * Recovering or replacing broken Kubernetes nodes
     * Application installations, running tests on those applications
-  * See [Creating Micro Kubernetes Clusters using Kubespray](https://github.com/dperique/kube-mini-cloud/blob/master/README_CI_Kubernetes.md)
+  * See [Creating Micro Kubernetes Clusters using Kubespray](https://github.com/dperique/kube-mini-cloud/blob/master/kube-stack/README_micro_kube.md)
 * CI tests that require a full VM (I hope to run tests in some automated
   way to supplement our overworked CI system).
   * Developing, testing, and debugging of the CI test scripts
