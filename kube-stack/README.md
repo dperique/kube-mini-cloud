@@ -494,10 +494,22 @@ Here are a few things I found worthy to mention:
   would be for any cloud.  For example, when you run 1 VM to run kubespray and
   another 5 VMs to receive kubespray, you will get traffic from the first VM to all
   5 VMs simultaneously (due to ansible).  This works, but I believe because of
-  ip in ip in ip in ip (i.e., ip-in-ip x 2), the network performance will be noticeable
+  ip in ip in ip in ip (i.e., ip-in-ip x 2), the network performance will be a little
   slower.
     * If you're going to do something like this, I suggest, moving all 6 VMs onto
       the same k8s node.  This way, there is only only ip-in-ip.  You can think of
-      this as pod affinity (but with VMIs which are also pods).
-    * To keep VMs on the same k8s node, I believe we can use label, etc -- but I will
-      have to experiment with that.
+      this as VM affinity similar to pod affinity (but with VMIs which are also pods).
+    * To keep VMs on the same k8s node, make a label on that k8s node and then use
+      a nodeSelector when creating the VMI.  For example, I label one node with
+      `kubectl label node (nodeName) owner=dperiquet` and the use this nodeSelector:
+
+      ```
+      spec:
+        nodeSelector:
+          owner: "dperiquet"
+        domain:
+          devices:
+            disks:
+            - disk:
+      ...
+      ```
