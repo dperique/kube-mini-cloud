@@ -513,3 +513,25 @@ Here are a few things I found worthy to mention:
             - disk:
       ...
       ```
+* How to expose a VM as a service so you can ssh to it outside of the kube-stack
+  k8s cluster (I show both using kubectl virt subcommand and virtctl commands and in my case,
+  I have to VMs in the "zuul-ci" namespace called "xenial1" and "xenial-mk1"):
+
+  ```
+  $ kubectl virt expose virtualmachineinstance vmi-xenial1 --name xenial1-ssh --type NodePort --port 22 -n zuul-ci
+  service xenial1-ssh successfully exposed for virtualmachineinstance vmi-xenial1
+
+  $ virtctl expose virtualmachineinstance vmi-xenial-mk1 --name xenial-mk1-ssh --type NodePort --port 22 -n zuul-ci
+  Service xenial-mk1-ssh successfully exposed for virtualmachineinstance vmi-xenial-mk1
+
+  $ kubectl get svc -n zuul-ci
+  NAME             TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+  xenial-mk1-ssh   NodePort   10.233.12.238   <none>        22:30366/TCP   24s
+  xenial1-ssh      NodePort   10.233.34.53    <none>        22:30625/TCP   6m18s
+
+  $ telnet x.x.x.x 30625
+  Trying 10.171.203.72...
+  Connected to 10.171.203.72.
+  Escape character is '^]'.
+  SSH-2.0-OpenSSH_7.2p2 Ubuntu-4ubuntu2.8
+  ```
