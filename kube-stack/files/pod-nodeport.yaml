@@ -1,0 +1,16 @@
+# Add a nodeport to a Pod to expose it to outside
+# the kube-stack cluster.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: dp-kube4
+  namespace: kuul-pods
+spec:
+  type: NodePort
+  ports:
+    - port: 22
+      nodePort: 30422
+      protocol: TCP
+  selector:
+    app: dp-kube4-ssh

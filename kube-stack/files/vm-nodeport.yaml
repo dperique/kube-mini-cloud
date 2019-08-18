@@ -1,0 +1,17 @@
+# Add a nodeport for a VM to expose it to outside
+# the kube-stack cluster.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: xenial-weave
+  namespace: k8s-test
+spec:
+  type: NodePort
+  ports:
+    - port: 22
+      nodePort: 30022
+      protocol: TCP
+  selector:
+    kubevirt.io/domain: xenial-weave
+    special: vmi-xenial-weave
