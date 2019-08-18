@@ -535,3 +535,52 @@ Here are a few things I found worthy to mention:
   Escape character is '^]'.
   SSH-2.0-OpenSSH_7.2p2 Ubuntu-4ubuntu2.8
   ```
+
+* If you want to specify the port for the VM, use this as specifying the nodeport in virtctl
+  is apparently not supported (my goal was to map nodeport 30022 as port 22 on the "xenial-weave
+  VM):
+
+  ```
+  $ cat vm-nodeport.yaml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: xenial-weave
+    namespace: k8s-test
+  spec:
+    type: NodePort
+    ports:
+      - port: 22
+        nodePort: 30022
+        protocol: TCP
+    selector:
+      kubevirt.io/domain: xenial-weave
+      special: vmi-xenial-weave
+
+  $ kubectl apply -f vm-nodeport.yaml
+  service/xenial-weave created
+
+  $ kubectl get svc -n k8s-test
+  NAME           TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+  xenial-weave   NodePort   10.233.11.91   <none>        22:30022/TCP   3m22s
+  ```
+
+* How to expose a Pod to outside the kube-stack cluster on a nodeport: the short answer
+  is just make a nodePort service (in this case, I wanted one of my pods called "dp-kube4"
+  to be reachable via nodeport 30422 for ssh):
+
+  ```
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: dp-kube4
+    namespace: kuul-pods
+  spec:
+    type: NodePort
+    ports:
+      - port: 22
+        nodePort: 30422
+        protocol: TCP
+    selector:
+      app: dp-kube4-ssh
+  ```
