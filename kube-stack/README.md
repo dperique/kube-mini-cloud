@@ -589,5 +589,5 @@ Here are a few things I found worthy to mention:
   state.  Due to how we setup the VMs using the images described above, if your VM goes
   into "Failed" state, the VM is gone and whatever data on it is gone.
 
-  To recover, delete the VM by doing `kubectl delete -f xx.yaml` where xx.yaml is the yaml
-  used to create the VM.
+  Delete the VM by doing `kubectl delete -f xx.yaml` where xx.yaml is the yaml
+  used to create the VM and then re-create the VM.
